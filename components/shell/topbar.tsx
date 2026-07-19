@@ -201,11 +201,11 @@ export function Topbar({
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
-      <h1 className="text-sm font-medium text-foreground">
+      <h1 className="min-w-0 truncate text-sm font-medium text-foreground">
         {titleForPath(pathname)}
       </h1>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3">
         <IdeaDialog
           trigger={
             <Button variant="outline" size="sm">
@@ -226,7 +226,9 @@ export function Topbar({
               <Avatar size="sm">
                 <AvatarFallback>{initialsFor(userName)}</AvatarFallback>
               </Avatar>
-              <span className="text-sm text-foreground">{userName}</span>
+              <span className="max-w-[10rem] truncate text-sm text-foreground">
+                {userName}
+              </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

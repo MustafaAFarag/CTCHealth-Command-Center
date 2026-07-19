@@ -86,7 +86,7 @@ export function ProjectDetail({
   return (
     <div className="flex flex-col gap-4">
       <header className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-2">
             <Button asChild variant="ghost" size="icon-sm" className="mt-0.5">
               <Link href="/overview">
