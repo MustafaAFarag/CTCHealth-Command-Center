@@ -63,6 +63,19 @@ export function ProjectsPageClient({
     setImportResult(null);
     setImportOpen(true);
 
+    const MAX_CSV_BYTES = 1_048_576;
+    if (file.size > MAX_CSV_BYTES) {
+      setImportResult({
+        ok: false,
+        code: "VALIDATION",
+        error: "CSV file is too large.",
+        errors: [
+          `CSV file is too large — keep it under 1 MB (received ${file.size} bytes).`,
+        ],
+      });
+      return;
+    }
+
     startImport(async () => {
       try {
         const csvText = await file.text();

@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { computeHealth, dateOnlyUTC } from "@/lib/health";
 import { sanitizePerson } from "@/lib/sanitize-person";
-import { getSession } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 import { PeopleFilter } from "@/components/filters/people-filter";
 import {
   firstSearchParam,
@@ -36,9 +36,9 @@ export default async function ProjectsPage({
   const activePeople = activePeopleRaw.map(sanitizePerson);
   const allPeople = allPeopleRaw.map(sanitizePerson);
 
-  const session = await getSession();
-  const isDemo = session?.isDemo ?? false;
-  const sessionPersonId = session?.personId ?? activePeople[0]?.id ?? "";
+  const session = await requireSession();
+  const isDemo = session.isDemo;
+  const sessionPersonId = session.personId;
   const effectivePeopleParam = peopleParam ?? (isDemo ? "all" : undefined);
   const { ids: selectedIds, isAll } = parsePeopleParam(
     effectivePeopleParam,

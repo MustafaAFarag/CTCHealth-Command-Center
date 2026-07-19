@@ -42,14 +42,16 @@ export default async function OverviewPage() {
   const isDemo = session.isDemo;
 
   const projects = await db.project.findMany({
-    where: {
-      archived: false,
-      isDemo,
-      OR: [
-        { ownerId: session.personId },
-        { members: { some: { personId: session.personId } } },
-      ],
-    },
+    where: isDemo
+      ? { archived: false, isDemo: true }
+      : {
+          archived: false,
+          isDemo: false,
+          OR: [
+            { ownerId: session.personId },
+            { members: { some: { personId: session.personId } } },
+          ],
+        },
     include: { owner: true, milestones: true },
   });
 
@@ -59,10 +61,7 @@ export default async function OverviewPage() {
   const rows = projects
     .map((project) => {
       const doneCount = project.milestones.filter((m) => m.done).length;
-      const progress =
-        project.milestones.length > 0
-          ? deriveProgress(doneCount, project.milestones.length)
-          : project.progress;
+      const progress = deriveProgress(doneCount, project.milestones.length);
       const nextDeliverable = project.milestones
         .filter((m) => !m.done)
         .sort(
@@ -128,7 +127,8 @@ export default async function OverviewPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
         <p className="text-sm text-muted-foreground">
           {criticalRows.length} critical of {rows.length} project
-          {rows.length === 1 ? "" : "s"} you own or work on.
+          {rows.length === 1 ? "" : "s"}
+          {isDemo ? "." : " you own or work on."}
         </p>
       </header>
 

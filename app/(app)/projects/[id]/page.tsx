@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { computeHealth } from "@/lib/health";
 import { sanitizePerson } from "@/lib/sanitize-person";
-import { getSession } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 import type { ProjectWithRelations } from "@/lib/actions/projects";
 
 import { ProjectDetail } from "./project-detail";
@@ -16,8 +16,8 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await getSession();
-  const isDemo = session?.isDemo ?? false;
+  const session = await requireSession();
+  const isDemo = session.isDemo;
 
   const [project, people] = await Promise.all([
     db.project.findUnique({

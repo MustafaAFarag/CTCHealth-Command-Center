@@ -66,7 +66,6 @@ const DELIVERABLES = [
 ] as const;
 
 const SPECIAL_END_OFFSETS = [-30, -10, -1, 0, 1, 1, 7, 14, 14, 30, 30, 31];
-const SPECIAL_PROGRESS = [10, 40, 65, 100, 100, 0, 35, 79, 80, 49, 50, 0];
 const ARCHIVED_INDEXES = new Set([7, 15, 23, 31, 39, 47, 55, 63]);
 
 function addUtcDays(date: Date, days: number): Date {
@@ -101,10 +100,6 @@ function startOffsetFor(index: number, endOffset: number): number {
   }
 
   return Math.min(-7 - ((index * 13) % 180), endOffset - 14);
-}
-
-function progressFor(index: number): number {
-  return SPECIAL_PROGRESS[index] ?? [0, 20, 49, 50, 65, 79, 80, 100][index % 8];
 }
 
 function membersFor(
@@ -277,7 +272,7 @@ function projectDataFor(index: number, people: Person[]): Prisma.ProjectCreateIn
     owner.id,
     memberIds,
   );
-  const progress = progressFromMilestones(milestones) ?? progressFor(index);
+  const progress = progressFromMilestones(milestones) ?? 0;
 
   return {
     name: projectName(index),

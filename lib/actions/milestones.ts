@@ -22,17 +22,14 @@ function revalidateProjectRoutes(): void {
   revalidatePath("/projects/[id]", "page");
 }
 
-// Progress is derived from deliverables once a project has any; this bypasses
-// project.version on purpose so an open project-edit form can't false-CONFLICT.
+// Progress is derived from deliverables; zero deliverables means 0%. This
+// bypasses project.version on purpose so an open project-edit form can't
+// false-CONFLICT.
 async function syncProjectProgress(projectId: string): Promise<void> {
   const milestones = await db.milestone.findMany({
     where: { projectId },
     select: { done: true },
   });
-
-  if (milestones.length === 0) {
-    return;
-  }
 
   const doneCount = milestones.filter((milestone) => milestone.done).length;
   await db.project.update({

@@ -11,6 +11,7 @@ import {
   parseProjectCsv,
   resolveProjectCsvPeople,
 } from "@/lib/project-csv";
+import { sanitizePerson } from "@/lib/sanitize-person";
 import { requireSession } from "@/lib/session";
 import type { ActionResult } from "@/lib/types";
 import {
@@ -64,6 +65,43 @@ function revalidateProjectRoutes(): void {
   revalidatePath("/projects/[id]", "page");
 }
 
+function sanitizeProjectResult(
+  project: ProjectWithRelations,
+): ProjectWithRelations {
+  return {
+    ...project,
+    owner: sanitizePerson(project.owner),
+    members: project.members.map((member) => ({
+      ...member,
+      person: sanitizePerson(member.person),
+    })),
+  };
+}
+
+async function assertRealPeople(
+  ownerId: string,
+  memberIds: string[],
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const ids = Array.from(new Set([ownerId, ...memberIds]));
+  const people = await db.person.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, isDemo: true },
+  });
+
+  if (people.length !== ids.length) {
+    return { ok: false, error: "Owner or member not found." };
+  }
+
+  if (people.some((person) => person.isDemo)) {
+    return {
+      ok: false,
+      error: "Demo people cannot be assigned to real projects.",
+    };
+  }
+
+  return { ok: true };
+}
+
 async function requireSessionResult(): Promise<
   | { ok: true; personId: string; isDemo: boolean }
   | { ok: false; code: "UNAUTHORIZED"; error: string }
@@ -100,6 +138,11 @@ export async function createProject(
   const { memberIds, startDate, endDate, ...rest } = parsed.data;
   const uniqueMemberIds = Array.from(new Set(memberIds));
 
+  const peopleCheck = await assertRealPeople(rest.ownerId, uniqueMemberIds);
+  if (!peopleCheck.ok) {
+    return { ok: false, code: "VALIDATION", error: peopleCheck.error };
+  }
+
   const project = await db.project.create({
     data: {
       ...rest,
@@ -117,7 +160,7 @@ export async function createProject(
   });
 
   revalidateProjectRoutes();
-  return { ok: true, data: project };
+  return { ok: true, data: sanitizeProjectResult(project) };
 }
 
 export async function importProjectsCsv(
@@ -128,7 +171,21 @@ export async function importProjectsCsv(
     return { ...session, errors: [session.error] };
   }
 
-  const parsedText = z.string().min(1).safeParse(csvText);
+  const MAX_CSV_BYTES = 1_048_576;
+  const textLength = typeof csvText === "string" ? csvText.length : 0;
+  if (textLength > MAX_CSV_BYTES) {
+    const errors = [
+      `CSV file is too large — keep it under 1 MB (received ${textLength} characters).`,
+    ];
+    return {
+      ok: false,
+      code: "VALIDATION",
+      error: "CSV file is too large.",
+      errors,
+    };
+  }
+
+  const parsedText = z.string().min(1).max(MAX_CSV_BYTES).safeParse(csvText);
   if (!parsedText.success) {
     const errors = ["Row 1: CSV file is empty or invalid."];
     return {
@@ -241,6 +298,11 @@ export async function updateProject(
   const { memberIds, startDate, endDate, ...rest } = parsed.data;
   const uniqueMemberIds = Array.from(new Set(memberIds));
 
+  const peopleCheck = await assertRealPeople(rest.ownerId, uniqueMemberIds);
+  if (!peopleCheck.ok) {
+    return { ok: false, code: "VALIDATION", error: peopleCheck.error };
+  }
+
   const updated = await db.$transaction(async (tx) => {
     // Progress is derived from deliverables server-side
     // (lib/actions/milestones.ts); the details form no longer owns it.
@@ -284,7 +346,7 @@ export async function updateProject(
   }
 
   revalidateProjectRoutes();
-  return { ok: true, data: updated };
+  return { ok: true, data: sanitizeProjectResult(updated) };
 }
 
 export async function setProjectStatus(

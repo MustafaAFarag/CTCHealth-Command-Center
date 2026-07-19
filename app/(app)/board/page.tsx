@@ -1,7 +1,7 @@
 import { computeHealth } from "@/lib/health";
 import { db } from "@/lib/db";
 import { sanitizePerson } from "@/lib/sanitize-person";
-import { getSession } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
 import {
   COLUMN_ORDER,
@@ -40,9 +40,9 @@ export default async function BoardPage({
     })
   ).map(sanitizePerson);
 
-  const session = await getSession();
-  const isDemo = session?.isDemo ?? false;
-  const sessionPersonId = session?.personId ?? activePeople[0]?.id ?? "";
+  const session = await requireSession();
+  const isDemo = session.isDemo;
+  const sessionPersonId = session.personId;
   const effectivePeopleParam = peopleParam ?? (isDemo ? "all" : undefined);
   const { ids: selectedIds, isAll } = parsePeopleParam(
     effectivePeopleParam,

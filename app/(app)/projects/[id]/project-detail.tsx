@@ -63,10 +63,7 @@ export function ProjectDetail({
   const [isPending, startTransition] = useTransition();
 
   const doneCount = project.milestones.filter((m) => m.done).length;
-  const progress =
-    project.milestones.length > 0
-      ? deriveProgress(doneCount, project.milestones.length)
-      : project.progress;
+  const progress = deriveProgress(doneCount, project.milestones.length);
 
   function handleArchiveToggle() {
     startTransition(async () => {
