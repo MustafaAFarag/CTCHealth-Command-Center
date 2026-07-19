@@ -49,6 +49,8 @@ function revalidateProjectRoutes(): void {
   for (const route of PROJECT_ROUTES) {
     revalidatePath(route);
   }
+  // Detail pages render project fields and optimistic-lock versions too.
+  revalidatePath("/projects/[id]", "page");
 }
 
 async function requireSessionResult(): Promise<

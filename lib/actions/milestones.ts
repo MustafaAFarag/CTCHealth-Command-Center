@@ -18,6 +18,8 @@ function revalidateProjectRoutes(): void {
   for (const route of PROJECT_ROUTES) {
     revalidatePath(route);
   }
+  // Detail pages render milestones and optimistic-lock versions too.
+  revalidatePath("/projects/[id]", "page");
 }
 
 // Progress is derived from deliverables once a project has any; this bypasses

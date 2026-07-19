@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useTransition } from "react";
+import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import type { Person } from "@prisma/client";
 
-import { NotesTab, type NotesTabHandle } from "@/components/notes/notes-tab";
+import { NotesTab } from "@/components/notes/notes-tab";
 import { DeliverablesSection } from "@/components/project-details/deliverables-section";
 import { DetailsTab } from "@/components/project-details/details-tab";
 import { Badge } from "@/components/ui/badge";
@@ -61,15 +61,6 @@ export function ProjectDetail({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const notesRef = useRef<NotesTabHandle>(null);
-
-  // Notes autosave is debounced — flush pending edits when navigating away.
-  useEffect(() => {
-    const notes = notesRef.current;
-    return () => {
-      void notes?.flush();
-    };
-  }, []);
 
   const doneCount = project.milestones.filter((m) => m.done).length;
   const progress =
@@ -189,7 +180,6 @@ export function ProjectDetail({
             <h2 className="border-b px-4 py-2.5 text-sm font-medium">Notes</h2>
             <div className="h-96">
               <NotesTab
-                ref={notesRef}
                 key={project.id}
                 projectId={project.id}
                 version={project.version}

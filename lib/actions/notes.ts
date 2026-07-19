@@ -75,6 +75,9 @@ export async function saveNotes(
   }
 
   revalidatePath("/projects");
+  // Keep the detail page's project.version fresh, or its details form and
+  // archive button submit stale versions and false-CONFLICT.
+  revalidatePath("/projects/[id]", "page");
   const project = await db.project.findUniqueOrThrow({
     where: { id: projectId },
     select: { version: true },

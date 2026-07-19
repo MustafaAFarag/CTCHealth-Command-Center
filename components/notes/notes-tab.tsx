@@ -172,6 +172,15 @@ export const NotesTab = forwardRef<NotesTabHandle, NotesTabProps>(function Notes
     };
   }, [flushLatest]);
 
+  // On the project detail page this component stays mounted while other
+  // actions (details save, archive, milestones) bump project.version — adopt
+  // newer versions from props or the next autosave false-CONFLICTs.
+  useEffect(() => {
+    if (version > versionRef.current) {
+      versionRef.current = version;
+    }
+  }, [version]);
+
   const activeMarks = useEditorState({
     editor,
     selector: (ctx) =>

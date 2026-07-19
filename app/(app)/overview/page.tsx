@@ -85,6 +85,7 @@ export default async function OverviewPage() {
   const activeCount = rows.filter((row) => row.status === "active").length;
   const atRiskCount = rows.filter((row) => row.health !== "green").length;
   const dueThisWeek = projects
+    .filter((project) => project.status !== "completed")
     .flatMap((project) => project.milestones)
     .filter((milestone) => {
       if (milestone.done) {
@@ -113,8 +114,8 @@ export default async function OverviewPage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
         <p className="text-sm text-muted-foreground">
-          {rows.length} project{rows.length === 1 ? "" : "s"} in flight across
-          the portfolio.
+          {rows.length} project{rows.length === 1 ? "" : "s"} across the
+          portfolio.
         </p>
       </header>
 
