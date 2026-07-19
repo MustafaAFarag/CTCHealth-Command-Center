@@ -218,7 +218,7 @@ export function DetailsTab({
 
   return (
     <form
-      className="flex h-full flex-col"
+      className="flex min-h-0 flex-1 flex-col"
       onSubmit={(event) => {
         event.preventDefault();
         submit(false);
@@ -499,7 +499,7 @@ export function DetailsTab({
 
       </div>
 
-      <div className="flex justify-end gap-2 border-t bg-muted/30 px-4 py-3">
+      <div className="flex shrink-0 justify-end gap-2 border-t bg-muted/30 px-4 py-3">
         {mode === "new" ? (
           <Button
             type="button"

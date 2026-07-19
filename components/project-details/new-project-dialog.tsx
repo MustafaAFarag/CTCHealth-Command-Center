@@ -32,7 +32,7 @@ export function NewProjectDialog({
             Create a new project
           </DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <DetailsTab
             key={open ? "open" : "closed"}
             project={null}
