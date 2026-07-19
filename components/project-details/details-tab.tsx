@@ -22,6 +22,7 @@ import type { ProjectWithRelations } from "@/lib/actions/projects";
 import { dateOnlyUTC } from "@/lib/health";
 import { projectCreateSchema, projectInputSchema } from "@/lib/validation";
 
+import { AssigneeChip } from "./deliverables-section";
 import { MembersPicker, OwnerPicker } from "./people-picker";
 
 const CATEGORY_OPTIONS = [
@@ -47,6 +48,7 @@ const PRIORITY_OPTIONS = [
 type DeliverableDraft = {
   name: string;
   dueDate: string;
+  assigneeId: string;
 };
 
 type FormState = {
@@ -163,6 +165,9 @@ export function DetailsTab({
               dueDate: deliverable.dueDate
                 ? dateOnlyUTC(new Date(deliverable.dueDate))
                 : "",
+              ...(deliverable.assigneeId
+                ? { assigneeId: deliverable.assigneeId }
+                : {}),
             })),
           }
         : {}),
@@ -219,7 +224,7 @@ export function DetailsTab({
         submit(false);
       }}
     >
-      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-3">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-3">
         {mode === "edit" && project?.archived ? (
           <Badge variant="secondary">Archived</Badge>
         ) : null}
@@ -393,6 +398,19 @@ export function DetailsTab({
                       }))
                     }
                   />
+                  <AssigneeChip
+                    people={people}
+                    value={deliverable.assigneeId}
+                    disabled={isPending}
+                    onChange={(assigneeId) =>
+                      setState((prev) => ({
+                        ...prev,
+                        deliverables: prev.deliverables.map((item, i) =>
+                          i === index ? { ...item, assigneeId } : item,
+                        ),
+                      }))
+                    }
+                  />
                   <Button
                     type="button"
                     variant="ghost"
@@ -422,7 +440,11 @@ export function DetailsTab({
                     ...prev,
                     deliverables: [
                       ...prev.deliverables,
-                      { name: "", dueDate: prev.endDate },
+                      {
+                        name: "",
+                        dueDate: prev.endDate,
+                        assigneeId: prev.ownerId,
+                      },
                     ],
                   }))
                 }

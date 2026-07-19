@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { createPerson, logout } from "@/lib/actions/people";
 import { IdeaDialog } from "@/components/ideas/idea-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -213,7 +212,6 @@ export function Topbar({
             </Button>
           }
         />
-        <Badge variant="secondary">MVP · Pilot</Badge>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

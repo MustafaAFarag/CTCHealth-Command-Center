@@ -43,7 +43,7 @@ function initials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-function AssigneeChip({
+export function AssigneeChip({
   people,
   value,
   onChange,

@@ -50,6 +50,7 @@ export const projectCreateSchema = z
       z.object({
         name: requiredText(200),
         dueDate: z.coerce.date(),
+        assigneeId: idSchema.optional(),
       }),
     ),
   })

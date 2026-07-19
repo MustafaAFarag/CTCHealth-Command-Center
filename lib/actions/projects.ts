@@ -132,11 +132,16 @@ export async function createProject(
   );
 
   // The form defaults the owner to the session user; that self-ownership is
-  // always allowed (demo included), so only check other people.
-  const idsToCheck =
-    rest.ownerId === session.personId
-      ? uniqueMemberIds
-      : [rest.ownerId, ...uniqueMemberIds];
+  // always allowed (demo included), so only check other people. Deliverable
+  // assignees get the same vetting.
+  const assigneeIds = deliverables.flatMap((deliverable) =>
+    deliverable.assigneeId ? [deliverable.assigneeId] : [],
+  );
+  const idsToCheck = [
+    ...(rest.ownerId === session.personId ? [] : [rest.ownerId]),
+    ...uniqueMemberIds,
+    ...assigneeIds.filter((personId) => personId !== session.personId),
+  ];
   const peopleCheck = await assertRealPeople(idsToCheck);
   if (!peopleCheck.ok) {
     return { ok: false, code: "VALIDATION", error: peopleCheck.error };
@@ -159,6 +164,7 @@ export async function createProject(
           name: deliverable.name,
           dueDate: dateOnlyUTC(deliverable.dueDate),
           done: false,
+          assigneeId: deliverable.assigneeId ?? null,
           updatedById: session.personId,
         })),
       },
