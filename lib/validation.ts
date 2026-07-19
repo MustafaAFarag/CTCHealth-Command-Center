@@ -15,7 +15,6 @@ export const projectInputSchema = z
     priority: z.enum(["high", "medium", "low"]),
     ownerId: nonEmptyText,
     memberIds: z.array(nonEmptyText),
-    progress: z.number().int().min(0).max(100),
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
     notes: z.string().optional(),

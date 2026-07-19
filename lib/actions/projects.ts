@@ -92,6 +92,7 @@ export async function createProject(
   const project = await db.project.create({
     data: {
       ...rest,
+      progress: 0,
       startDate: dateOnlyUTC(startDate),
       endDate: dateOnlyUTC(endDate),
       isDemo: session.isDemo,
@@ -133,19 +134,16 @@ export async function updateProject(
     };
   }
 
-  const { memberIds, startDate, endDate, progress, ...rest } = parsed.data;
+  const { memberIds, startDate, endDate, ...rest } = parsed.data;
   const uniqueMemberIds = Array.from(new Set(memberIds));
 
   const updated = await db.$transaction(async (tx) => {
-    // Once a project has deliverables, progress is derived server-side
-    // (lib/actions/milestones.ts) — a stale form must not clobber it.
-    const milestoneCount = await tx.milestone.count({ where: { projectId: id } });
-
+    // Progress is derived from deliverables server-side
+    // (lib/actions/milestones.ts); the details form no longer owns it.
     const updateResult = await tx.project.updateMany({
       where: { id, version, isDemo: session.isDemo },
       data: {
         ...rest,
-        ...(milestoneCount > 0 ? {} : { progress }),
         startDate: dateOnlyUTC(startDate),
         endDate: dateOnlyUTC(endDate),
         version: { increment: 1 },

@@ -9,7 +9,7 @@ import {
   healthLabel,
   type Health,
 } from "@/lib/health";
-import { getSession } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -38,11 +38,18 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 const MILLISECONDS_PER_WEEK = 7 * 24 * 60 * 60 * 1_000;
 
 export default async function OverviewPage() {
-  const session = await getSession();
-  const isDemo = session?.isDemo ?? false;
+  const session = await requireSession();
+  const isDemo = session.isDemo;
 
   const projects = await db.project.findMany({
-    where: { archived: false, isDemo },
+    where: {
+      archived: false,
+      isDemo,
+      OR: [
+        { ownerId: session.personId },
+        { members: { some: { personId: session.personId } } },
+      ],
+    },
     include: { owner: true, milestones: true },
   });
 
@@ -113,13 +120,15 @@ export default async function OverviewPage() {
     { label: "Avg progress", value: `${avgProgress}%` },
   ];
 
+  const criticalRows = rows.filter((row) => row.health !== "green");
+
   return (
     <div className="flex flex-col gap-4">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
         <p className="text-sm text-muted-foreground">
-          {rows.length} project{rows.length === 1 ? "" : "s"} across the
-          portfolio.
+          {criticalRows.length} critical of {rows.length} project
+          {rows.length === 1 ? "" : "s"} you own or work on.
         </p>
       </header>
 
@@ -137,15 +146,15 @@ export default async function OverviewPage() {
 
       <section className="overflow-hidden rounded-lg border border-border">
         <h2 className="border-b bg-card px-4 py-2.5 text-sm font-medium">
-          Projects
+          Critical projects
         </h2>
-        {rows.length === 0 ? (
+        {criticalRows.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-            No projects yet — create one from the Projects tab.
+            No critical projects — everything you own or work on is on track.
           </p>
         ) : (
           <ul className="divide-y">
-            {rows.map((row) => (
+            {criticalRows.map((row) => (
               <li key={row.id}>
                 <Link
                   href={`/projects/${row.id}`}

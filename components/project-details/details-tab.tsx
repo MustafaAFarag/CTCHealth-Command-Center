@@ -51,7 +51,6 @@ type FormState = {
   priority: string;
   ownerId: string;
   memberIds: string[];
-  progress: number;
   startDate: string;
   endDate: string;
 };
@@ -75,7 +74,6 @@ function defaultState(): FormState {
     priority: "medium",
     ownerId: "",
     memberIds: [],
-    progress: 0,
     startDate: today,
     endDate: today,
   };
@@ -90,7 +88,6 @@ function stateFromProject(project: ProjectWithRelations): FormState {
     priority: project.priority,
     ownerId: project.ownerId,
     memberIds: project.members.map((member) => member.personId),
-    progress: project.progress,
     startDate: toDateInputValue(project.startDate),
     endDate: toDateInputValue(project.endDate),
   };
@@ -148,7 +145,6 @@ export function DetailsTab({
       priority: values.priority,
       ownerId: values.ownerId,
       memberIds: values.memberIds,
-      progress: values.progress,
       startDate: dateOnlyUTC(new Date(values.startDate)),
       endDate: dateOnlyUTC(new Date(values.endDate)),
       // notes intentionally omitted — the Notes tab owns project.notes; a
@@ -193,11 +189,6 @@ export function DetailsTab({
 
       onClose();
     });
-  }
-
-  function updateProgress(raw: number) {
-    const clamped = Number.isNaN(raw) ? 0 : Math.min(100, Math.max(0, raw));
-    setState((prev) => ({ ...prev, progress: clamped }));
   }
 
   return (
@@ -343,45 +334,19 @@ export function DetailsTab({
 
         <div className="space-y-1.5">
           <Label htmlFor="project-progress">Progress</Label>
-          {deliverableCount > 0 ? (
-            <div className="space-y-1">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${derivedProgress}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {deliverableDoneCount} of {deliverableCount} done ·{" "}
-                {derivedProgress}% — driven by deliverables
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={state.progress}
-                disabled={isPending}
-                onChange={(event) => updateProgress(Number(event.target.value))}
-                className="h-1.5 flex-1 cursor-pointer accent-primary"
-              />
-              <Input
-                id="project-progress"
-                type="number"
-                min={0}
-                max={100}
-                value={state.progress}
-                disabled={isPending}
-                onChange={(event) => updateProgress(Number(event.target.value))}
-                className="w-16"
+          <div className="space-y-1">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{ width: `${derivedProgress}%` }}
               />
             </div>
-          )}
-          {errors.progress ? (
-            <p className="text-xs text-destructive">{errors.progress}</p>
-          ) : null}
+            <p className="text-xs text-muted-foreground">
+              {deliverableCount > 0
+                ? `${deliverableDoneCount} of ${deliverableCount} done · ${derivedProgress}% — driven by deliverables`
+                : "No deliverables yet — starts at 0%."}
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
