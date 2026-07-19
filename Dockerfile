@@ -46,7 +46,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/package.json /app/package-lock.json ./
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts /app/tsconfig.json ./
-COPY --from=builder --chown=nextjs:nodejs /app/lib/db.ts /app/lib/health.ts ./lib/
+COPY --from=builder --chown=nextjs:nodejs /app/lib/db.ts /app/lib/health.ts /app/lib/password.ts ./lib/
 COPY --chown=nextjs:nodejs deploy/docker-entrypoint.sh ./docker-entrypoint.sh
 
 RUN chmod 755 ./docker-entrypoint.sh \
