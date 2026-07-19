@@ -59,6 +59,7 @@ export function ProjectsPageClient({
   }
 
   function importCsvFile(file: File) {
+    setNewOpen(false);
     setImportFileName(file.name);
     setImportResult(null);
     setImportOpen(true);
@@ -119,13 +120,13 @@ export function ProjectsPageClient({
         totalCount={totalCount}
         onRowClick={(id) => router.push(`/projects/${id}`)}
         onNewProject={() => setNewOpen(true)}
-        onDownloadCsvTemplate={downloadCsvTemplate}
-        onImportCsv={chooseCsvFile}
       />
       <NewProjectDialog
         people={people}
         open={newOpen}
         onOpenChange={setNewOpen}
+        onDownloadCsvTemplate={downloadCsvTemplate}
+        onImportCsv={chooseCsvFile}
       />
       <ImportProjectsDialog
         open={importOpen}

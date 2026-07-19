@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive, Download, Plus, Search, Upload, X } from "lucide-react";
+import { Archive, Plus, Search, X } from "lucide-react";
 
 import { FilterDropdown } from "@/components/filters/filter-dropdown";
 import { Button } from "@/components/ui/button";
@@ -30,8 +30,6 @@ export function ProjectsToolbar({
   onToggleFilter,
   onClearAll,
   onNewProject,
-  onDownloadCsvTemplate,
-  onImportCsv,
   onArchiveSelected,
 }: {
   filters: ProjectFilters;
@@ -46,8 +44,6 @@ export function ProjectsToolbar({
   onToggleFilter: (key: FilterKey, value: string) => void;
   onClearAll: () => void;
   onNewProject: () => void;
-  onDownloadCsvTemplate: () => void;
-  onImportCsv: () => void;
   onArchiveSelected: () => void;
 }) {
   const activeChips: { key: FilterKey; value: string; label: string }[] = [
@@ -172,18 +168,6 @@ export function ProjectsToolbar({
               Archive ({selectedCount})
             </Button>
           ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onDownloadCsvTemplate}
-          >
-            <Download data-icon="inline-start" />
-            CSV template
-          </Button>
-          <Button variant="outline" size="sm" onClick={onImportCsv}>
-            <Upload data-icon="inline-start" />
-            Import CSV
-          </Button>
           <Button size="sm" onClick={onNewProject}>
             <Plus data-icon="inline-start" />
             New project

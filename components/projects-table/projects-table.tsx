@@ -10,7 +10,6 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
-import { Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -36,8 +35,6 @@ export function ProjectsTable({
   totalCount,
   onRowClick,
   onNewProject,
-  onDownloadCsvTemplate,
-  onImportCsv,
 }: {
   rows: ProjectRow[];
   clientOptions: { value: string; label: string }[];
@@ -45,8 +42,6 @@ export function ProjectsTable({
   totalCount: number;
   onRowClick: (id: string) => void;
   onNewProject: () => void;
-  onDownloadCsvTemplate: () => void;
-  onImportCsv: () => void;
 }) {
   const router = useRouter();
   const {
@@ -116,19 +111,9 @@ export function ProjectsTable({
         <p className="text-sm text-muted-foreground">
           No projects yet — create the first one
         </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={onDownloadCsvTemplate}>
-            <Download data-icon="inline-start" />
-            CSV template
-          </Button>
-          <Button variant="outline" size="sm" onClick={onImportCsv}>
-            <Upload data-icon="inline-start" />
-            Import CSV
-          </Button>
-          <Button size="sm" onClick={onNewProject}>
-            New project
-          </Button>
-        </div>
+        <Button size="sm" onClick={onNewProject}>
+          New project
+        </Button>
       </div>
     );
   }
@@ -148,8 +133,6 @@ export function ProjectsTable({
         onToggleFilter={toggleFilter}
         onClearAll={clearAll}
         onNewProject={onNewProject}
-        onDownloadCsvTemplate={onDownloadCsvTemplate}
-        onImportCsv={onImportCsv}
         onArchiveSelected={archiveSelected}
       />
 
