@@ -36,3 +36,12 @@
 | 2026-07-19-1203 | prisma/seed.ts | other | Abort project replacement unless SEED_DESTRUCTIVE is explicit | done |
 | 2026-07-19-1203 | prisma/seed-guard.ts | other | Extract destructive seed guard logic | done |
 | 2026-07-19-1203 | prisma/seed-guard.test.ts | other | Cover empty, guarded, and destructive seed cases | done |
+| 2026-07-19-1940 | 2026-07-19-1940-plan-csv-project-import.md | doc | CSV project bulk-import implementation and handoff plan | done |
+| 2026-07-19-2001 | app/(app)/projects/projects-page-client.tsx | other | Wire CSV template download, file selection, import action state, and result dialog | done |
+| 2026-07-19-2001 | components/project-details/import-projects-dialog.tsx | other | Display CSV import progress, success count, and row validation errors | done |
+| 2026-07-19-2001 | components/projects-table/projects-table.tsx | other | Expose CSV controls in the project table and empty state | done |
+| 2026-07-19-2001 | components/projects-table/toolbar.tsx | other | Add CSV template and import buttons beside New project | done |
+| 2026-07-19-2001 | lib/actions/projects.ts | other | Add authenticated all-or-nothing CSV project import transaction | done |
+| 2026-07-19-2001 | lib/project-csv.ts | other | Parse and validate project CSV rows and resolve people names | done |
+| 2026-07-19-2001 | lib/validation.ts | other | Reuse exported project enum schemas across create and import validation | done |
+| 2026-07-19-2001 | lib/__tests__/project-csv.test.ts | other | Cover CSV quoting, row validation, and people resolution | done |

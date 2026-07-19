@@ -6,10 +6,18 @@ import type { Milestone, Person, Project, ProjectMember } from "@prisma/client";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { dateOnlyUTC } from "@/lib/health";
+import { dateOnlyUTC, deriveProgress } from "@/lib/health";
+import {
+  parseProjectCsv,
+  resolveProjectCsvPeople,
+} from "@/lib/project-csv";
 import { requireSession } from "@/lib/session";
 import type { ActionResult } from "@/lib/types";
-import { idSchema, projectInputSchema } from "@/lib/validation";
+import {
+  idSchema,
+  projectInputSchema,
+  projectStatusSchema,
+} from "@/lib/validation";
 
 export type ProjectInput = z.infer<typeof projectInputSchema>;
 
@@ -19,13 +27,16 @@ export type ProjectWithRelations = Project & {
   milestones: Milestone[];
 };
 
-const projectStatusSchema = z.enum([
-  "planning",
-  "active",
-  "on_hold",
-  "completed",
-]);
 type ProjectStatus = z.infer<typeof projectStatusSchema>;
+
+export type ProjectCsvImportResult =
+  | { ok: true; data: { count: number } }
+  | {
+      ok: false;
+      code: "VALIDATION" | "UNAUTHORIZED" | "ERROR";
+      error: string;
+      errors: string[];
+    };
 
 const projectVersionRefSchema = z.object({
   id: idSchema,
@@ -107,6 +118,99 @@ export async function createProject(
 
   revalidateProjectRoutes();
   return { ok: true, data: project };
+}
+
+export async function importProjectsCsv(
+  csvText: unknown,
+): Promise<ProjectCsvImportResult> {
+  const session = await requireSessionResult();
+  if (!session.ok) {
+    return { ...session, errors: [session.error] };
+  }
+
+  const parsedText = z.string().min(1).safeParse(csvText);
+  if (!parsedText.success) {
+    const errors = ["Row 1: CSV file is empty or invalid."];
+    return {
+      ok: false,
+      code: "VALIDATION",
+      error: "CSV validation failed.",
+      errors,
+    };
+  }
+
+  const parsedCsv = parseProjectCsv(parsedText.data);
+  if (!parsedCsv.ok) {
+    return {
+      ok: false,
+      code: "VALIDATION",
+      error: "CSV validation failed.",
+      errors: parsedCsv.errors,
+    };
+  }
+
+  const people = await db.person.findMany({
+    where: { isDemo: false },
+    select: { id: true, name: true },
+  });
+  const resolvedCsv = resolveProjectCsvPeople(parsedCsv.data, people);
+  if (!resolvedCsv.ok) {
+    return {
+      ok: false,
+      code: "VALIDATION",
+      error: "CSV validation failed.",
+      errors: resolvedCsv.errors,
+    };
+  }
+
+  try {
+    await db.$transaction(async (tx) => {
+      for (const project of resolvedCsv.data) {
+        await tx.project.create({
+          data: {
+            name: project.name,
+            client: project.client,
+            category: project.category,
+            status: project.status,
+            priority: project.priority,
+            ownerId: project.ownerId,
+            progress: deriveProgress(0, project.deliverables.length),
+            startDate: dateOnlyUTC(project.startDate),
+            endDate: dateOnlyUTC(project.endDate),
+            version: 1,
+            isDemo: session.isDemo,
+            createdById: session.personId,
+            updatedById: session.personId,
+            members: {
+              create: project.memberIds.map((personId) => ({ personId })),
+            },
+            milestones: {
+              create: project.deliverables.map((deliverable) => ({
+                name: deliverable.name,
+                dueDate: dateOnlyUTC(deliverable.dueDate),
+                done: false,
+                version: 1,
+                updatedById: session.personId,
+              })),
+            },
+          },
+        });
+      }
+    });
+  } catch {
+    const errors = [
+      "Import failed before any projects were created. Please try again.",
+    ];
+    return {
+      ok: false,
+      code: "ERROR",
+      error: errors[0],
+      errors,
+    };
+  }
+
+  revalidateProjectRoutes();
+  return { ok: true, data: { count: resolvedCsv.data.length } };
 }
 
 export async function updateProject(

@@ -6,13 +6,27 @@ const nonEmptyText = z.string().trim().min(1);
 
 export const idSchema = z.string().trim().min(1);
 
+export const projectCategorySchema = z.enum([
+  "tech",
+  "consultancy",
+  "agency",
+  "agents",
+]);
+export const projectStatusSchema = z.enum([
+  "planning",
+  "active",
+  "on_hold",
+  "completed",
+]);
+export const projectPrioritySchema = z.enum(["high", "medium", "low"]);
+
 export const projectInputSchema = z
   .object({
     name: requiredText(200),
     client: nonEmptyText,
-    category: z.enum(["tech", "consultancy", "agency", "agents"]),
-    status: z.enum(["planning", "active", "on_hold", "completed"]),
-    priority: z.enum(["high", "medium", "low"]),
+    category: projectCategorySchema,
+    status: projectStatusSchema,
+    priority: projectPrioritySchema,
     ownerId: nonEmptyText,
     memberIds: z.array(nonEmptyText),
     startDate: z.coerce.date(),
